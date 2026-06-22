@@ -25,7 +25,6 @@
       --border:      #e8e2d8;
       --radius:      12px;
       --shadow:      0 4px 24px rgba(0,0,0,.08);
-      --chain-color: var(--gold);
     }
 
     /* ─── RESET ─── */
@@ -89,7 +88,7 @@
       position: sticky;
       top: 82px;
       height: fit-content;
-      padding: 24px 32px 24px 0;
+      padding: 24px 40px 24px 0;
       border-right: 1px solid var(--border);
     }
     @media (max-width: 900px) {
@@ -124,76 +123,108 @@
       inset: 0;
       background: radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.6) 0%, transparent 70%);
       pointer-events: none;
+      z-index: 2;
     }
 
-    /* Chain SVG layer */
+    /* Cadena – imagen circular */
     .chain-layer {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 1;
+      pointer-events: none;
     }
-    .chain-layer svg {
-      width: 88%;
-      height: auto;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+    .chain-img {
+      width: 55%;   /* 78% × 0.7 ≈ 55% */
+      display: block;
+      transition: filter .35s ease;
     }
 
-    /* Charms drop zone */
-    .charms-row {
+    .charms-canvas {
       position: absolute;
-      left: 6%;
-      right: 6%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-wrap: nowrap;
-      overflow: hidden;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
     }
-    /* Vertical position will be set per base type via JS */
 
     .placed-charm {
-      position: relative;
-      width: 52px;
-      height: 52px;
-      flex-shrink: 0;
-      cursor: pointer;
-      transition: transform .15s ease;
-      animation: dropIn .3s cubic-bezier(.34,1.56,.64,1) both;
-    }
-    .placed-charm:hover { transform: scale(1.15) translateY(-3px); }
-    .placed-charm:hover::after {
-      content: '×';
       position: absolute;
-      top: -6px;
-      right: -6px;
-      width: 18px;
-      height: 18px;
-      background: #e55;
-      color: #fff;
-      border-radius: 50%;
-      font-size: 12px;
-      line-height: 18px;
-      text-align: center;
-      font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+      width: 84px;
+      height: 84px;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      pointer-events: all;
+      z-index: 5;
+      transition: filter .15s ease;
+    }
+    .placed-charm.dragging {
+      cursor: grabbing;
+      z-index: 20;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,.38)) brightness(1.06);
+      transition: none;
     }
     .placed-charm img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,.22));
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,.2));
     }
 
-    @keyframes dropIn {
-      from { opacity: 0; transform: scale(.5) translateY(-20px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
+    /* Botón × eliminar */
+    .charm-delete {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e44;
+      color: #fff;
+      border: 2px solid #fff;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.3);
+      pointer-events: all;
+      z-index: 15;
+      transition: background .15s;
     }
+    .charm-delete:hover { background: #c22; }
 
-    /* Empty state */
+    /* Handle de rotación */
+    .charm-rotate-handle {
+      position: absolute;
+      bottom: -7px;
+      left: -7px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      border: 1.5px solid rgba(0,0,0,.18);
+      font-size: 13px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,.22);
+      pointer-events: all;
+      z-index: 15;
+      touch-action: none;
+      user-select: none;
+    }
+    .charm-rotate-handle:active { cursor: grabbing; }
+
+    /* Estado vacío */
     .canvas-hint {
       position: absolute;
       inset: 0;
@@ -205,17 +236,18 @@
       color: var(--muted);
       pointer-events: none;
       transition: opacity .3s;
+      z-index: 4;
     }
-    .canvas-hint i { font-size: 2rem; opacity: .4; }
-    .canvas-hint p { font-size: .8rem; letter-spacing: .08em; opacity: .6; }
+    .canvas-hint i { font-size: 2rem; opacity: .35; }
+    .canvas-hint p { font-size: .78rem; letter-spacing: .08em; opacity: .55; text-align: center; padding: 0 20%; }
     .canvas-hint.hidden { opacity: 0; }
 
-    /* Controls under canvas */
+    /* Controles bajo el canvas */
     .preview-controls {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 16px;
+      margin-top: 20px;
       gap: 12px;
     }
     .btn-reset {
@@ -254,7 +286,6 @@
     }
     .price-badge .price-total .currency { font-size: 1rem; vertical-align: super; margin-right: 2px; }
 
-    /* Charm count pills */
     .charm-slots {
       display: flex;
       gap: 4px;
@@ -271,13 +302,24 @@
       letter-spacing: .06em;
     }
 
+    /* Tooltip de arrastre */
+    .drag-tip {
+      font-size: .68rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .drag-tip.visible { opacity: 1; }
+    .drag-tip i { font-size: .7rem; }
+
     /* ─── RIGHT COLUMN – BUILDER ─── */
-    .builder-col {
-      padding: 24px 0 24px 40px;
-    }
-    @media (max-width: 900px) {
-      .builder-col { padding: 0; }
-    }
+    .builder-col { padding: 24px 0 24px 40px; }
+    @media (max-width: 900px) { .builder-col { padding: 0; } }
 
     .product-eyebrow {
       font-size: .72rem;
@@ -300,14 +342,8 @@
       margin-bottom: 28px;
     }
 
-    /* Divider */
-    .section-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 24px 0;
-    }
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
-    /* Section label */
     .section-label {
       font-size: .72rem;
       letter-spacing: .2em;
@@ -342,21 +378,11 @@
       background: linear-gradient(135deg, #f8f9fc 0%, #edf0f6 100%);
     }
     .base-option input { position: absolute; opacity: 0; width: 0; height: 0; }
-    .base-name {
-      font-size: .82rem;
-      font-weight: 500;
-      letter-spacing: .04em;
-      margin-bottom: 3px;
-    }
-    .base-detail {
-      font-size: .72rem;
-      color: var(--muted);
-      letter-spacing: .04em;
-    }
+    .base-name  { font-size: .82rem; font-weight: 500; letter-spacing: .04em; margin-bottom: 3px; }
+    .base-detail { font-size: .72rem; color: var(--muted); letter-spacing: .04em; }
     .base-dot {
       display: inline-block;
-      width: 10px;
-      height: 10px;
+      width: 10px; height: 10px;
       border-radius: 50%;
       margin-right: 6px;
       vertical-align: middle;
@@ -364,16 +390,14 @@
     .dot-gold   { background: linear-gradient(135deg, var(--gold-light), var(--gold)); }
     .dot-silver { background: linear-gradient(135deg, var(--silver-light), var(--silver)); }
 
-    /* Charms grid */
+    /* Catálogo */
     .charms-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-top: 4px;
     }
-    @media (max-width: 480px) {
-      .charms-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 480px) { .charms-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .charm-card {
       position: relative;
@@ -404,130 +428,64 @@
       font-family: 'Font Awesome 6 Free';
       font-weight: 900;
       position: absolute;
-      top: 6px;
-      right: 8px;
+      top: 6px; right: 8px;
       font-size: .65rem;
       color: var(--gold);
     }
-    .charm-card img {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      pointer-events: none;
-    }
-    .charm-card .charm-name {
-      font-size: .72rem;
-      letter-spacing: .04em;
-      color: var(--text);
-      line-height: 1.3;
-    }
-    .charm-card .charm-price {
-      font-size: .72rem;
-      color: var(--gold-dark);
-      font-weight: 500;
-    }
+    .charm-card img { width: 64px; height: 64px; object-fit: contain; pointer-events: none; }
+    .charm-card .charm-name  { font-size: .72rem; letter-spacing: .04em; color: var(--text); line-height: 1.3; }
+    .charm-card .charm-price { font-size: .72rem; color: var(--gold-dark); font-weight: 500; }
     .charm-count-badge {
       position: absolute;
-      top: -6px;
-      left: -6px;
-      width: 20px;
-      height: 20px;
+      top: -6px; left: -6px;
+      width: 20px; height: 20px;
       border-radius: 50%;
       background: var(--gold);
       color: #fff;
       font-size: .65rem;
       font-weight: 700;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
-      display: none;
     }
     .charm-card.selected .charm-count-badge { display: flex; }
 
     /* CTA */
-    .cta-area {
-      margin-top: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .cta-area { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
     .btn-primary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 16px 24px;
-      background: var(--gold);
-      color: #fff;
-      border: none;
+      background: var(--gold); color: #fff; border: none;
       border-radius: 999px;
-      font-size: .85rem;
-      font-weight: 500;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all .2s;
+      font-size: .85rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      cursor: pointer; transition: all .2s;
     }
     .btn-primary:hover { background: var(--gold-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(160,120,48,.35); }
     .btn-secondary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 14px 24px;
-      background: transparent;
-      color: var(--text);
-      border: 1.5px solid var(--border);
-      border-radius: 999px;
-      font-size: .82rem;
-      letter-spacing: .08em;
-      cursor: pointer;
-      transition: all .2s;
+      background: transparent; color: var(--text);
+      border: 1.5px solid var(--border); border-radius: 999px;
+      font-size: .82rem; letter-spacing: .08em;
+      cursor: pointer; transition: all .2s;
     }
     .btn-secondary:hover { border-color: var(--gold-light); color: var(--gold-dark); }
 
-    .trust-strip {
-      display: flex;
-      gap: 18px;
-      margin-top: 18px;
-      flex-wrap: wrap;
-    }
-    .trust-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: .72rem;
-      color: var(--muted);
-      letter-spacing: .06em;
-    }
+    .trust-strip { display: flex; gap: 18px; margin-top: 18px; flex-wrap: wrap; }
+    .trust-item  { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: var(--muted); letter-spacing: .06em; }
     .trust-item i { color: var(--gold); font-size: .8rem; }
 
     /* Toast */
     #toast {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
+      position: fixed; bottom: 32px; left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: #1a1612;
-      color: #fff;
-      padding: 12px 22px;
-      border-radius: 999px;
-      font-size: .8rem;
-      letter-spacing: .06em;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .3s ease;
-      z-index: 999;
-      white-space: nowrap;
+      background: #1a1612; color: #fff;
+      padding: 12px 22px; border-radius: 999px;
+      font-size: .8rem; letter-spacing: .06em;
+      opacity: 0; pointer-events: none;
+      transition: all .3s ease; z-index: 999; white-space: nowrap;
     }
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* ─── CHAIN SVG THEMES ─── */
-    .chain-gold   .chain-link { stroke: var(--gold); }
-    .chain-silver .chain-link { stroke: var(--silver); }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 
@@ -553,18 +511,21 @@
     <p class="preview-label">Vista previa en tiempo real</p>
 
     <div class="jewelry-canvas" id="jewelryCanvas">
-      <!-- Chain SVG -->
+
+      <!-- Imagen circular de la cadena/collar base -->
       <div class="chain-layer" id="chainLayer">
-        <!-- SVG generated by JS -->
+        <img class="chain-img" id="chainImg"
+             src="./dijes/file_00000000815071f4a10cdc3f25b8f3fb.webp"
+             alt="Cadena base" />
       </div>
 
-      <!-- Charms drop zone – top position set by JS -->
-      <div class="charms-row" id="charmsRow"></div>
+      <!-- Dijes: posicionamiento absoluto libre con drag & drop -->
+      <div class="charms-canvas" id="charmsCanvas"></div>
 
-      <!-- Empty hint -->
+      <!-- Estado vacío -->
       <div class="canvas-hint" id="canvasHint">
         <i class="fa-regular fa-gem"></i>
-        <p>Selecciona dijes para personalizar</p>
+        <p>Selecciona dijes y arrástralos para posicionarlos</p>
       </div>
     </div>
 
@@ -579,6 +540,12 @@
         </span>
       </div>
     </div>
+
+    <p class="drag-tip" id="dragTip">
+      <i class="fa-solid fa-arrows-up-down-left-right"></i>
+      Arrastra los dijes · Toca para quitar
+    </p>
+
     <div class="charm-slots" id="charmSlots"></div>
   </section>
 
@@ -588,37 +555,35 @@
     <h1 class="product-title">Crea Tu Collar<br><em>de Charms</em> Único</h1>
     <p class="product-subtitle">
       Elige tu cadena base y combina tus dijes favoritos.<br>
-      Cada pieza se fabrica bajo pedido en nuestro taller.
+      Arrastra cada dije para posicionarlo exactamente donde quieras.
     </p>
 
     <hr class="section-divider" />
 
-    <!-- Base selector -->
     <p class="section-label"><i class="fa-solid fa-link" style="margin-right:6px;color:var(--gold)"></i>Elige tu cadena base</p>
     <div class="base-selector" id="baseSelector">
-      <label class="base-option active" data-base="gold" data-price="38">
+      <label class="base-option active" data-base="gold" data-price="5">
         <input type="radio" name="base" value="gold" checked />
         <span class="base-name"><span class="base-dot dot-gold"></span>Cadena Dorada</span>
         <span class="base-detail">Baño de oro 18k · 45 cm</span>
-        <span class="base-detail" style="color:var(--gold-dark);font-weight:500;margin-top:4px;display:block;">€38</span>
+        <span class="base-detail" style="color:var(--gold-dark);font-weight:500;margin-top:4px;display:block;">€5</span>
       </label>
-      <label class="base-option" data-base="silver" data-price="28">
+      <label class="base-option" data-base="silver" data-price="5">
         <input type="radio" name="base" value="silver" />
         <span class="base-name"><span class="base-dot dot-silver"></span>Cadena Plateada</span>
         <span class="base-detail">Acero inoxidable 316L · 45 cm</span>
-        <span class="base-detail" style="color:var(--silver-dark);font-weight:500;margin-top:4px;display:block;">€28</span>
+        <span class="base-detail" style="color:var(--silver-dark);font-weight:500;margin-top:4px;display:block;">€5</span>
       </label>
     </div>
 
     <hr class="section-divider" />
 
-    <!-- Charms catalog -->
-    <p class="section-label"><i class="fa-solid fa-circle-plus" style="margin-right:6px;color:var(--gold)"></i>Añade tus dijes — <span id="selectedCount">0</span> seleccionados</p>
-    <div class="charms-grid" id="charmsGrid">
-      <!-- Populated by JS -->
-    </div>
+    <p class="section-label">
+      <i class="fa-solid fa-circle-plus" style="margin-right:6px;color:var(--gold)"></i>
+      Añade tus dijes — <span id="selectedCount">0</span> colocados
+    </p>
+    <div class="charms-grid" id="charmsGrid"></div>
 
-    <!-- CTA -->
     <div class="cta-area">
       <button class="btn-primary" id="btnAddCart">
         <i class="fa-solid fa-bag-shopping"></i>
@@ -640,77 +605,79 @@
 
 </main>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
 <script>
-/* ── DATA ── */
+/* ── DATOS ── */
 const CHARMS = [
-  { id: "c01", name: "Luna Creciente",  price: 12, file: "file_000000003cc471f48e98bed1ee7993df__1_.webp" },
-  { id: "c02", name: "Estrella",         price: 10, file: "file_0000000055d871f4a094ad114945b95d.webp" },
-  { id: "c03", name: "Corazón",          price: 11, file: "file_000000006b7071f4a501bbf9aeec58a6.webp" },
-  { id: "c04", name: "Flor",             price: 13, file: "file_000000006e4871f495f5dff3c53cf014.webp" },
-  { id: "c05", name: "Mariposa",         price: 14, file: "file_00000000728871f4900ca3c91d93b3c9.webp" },
-  { id: "c06", name: "Llave",            price: 12, file: "file_0000000079dc71f4a5592334b7c4e354.webp" },
-  { id: "c07", name: "Infinito",         price: 11, file: "file_0000000079f472468fff3a27ff31339f.webp" },
-  { id: "c08", name: "Sol",              price: 13, file: "file_00000000815071f4a10cdc3f25b8f3fb.webp" },
-  { id: "c09", name: "Trébol",           price: 10, file: "file_000000008c3071f48a90945be02f3b5a.webp" },
-  { id: "c10", name: "Perla",            price: 15, file: "file_00000000b16471f4a3bf2a2e12fb2e64.webp" },
-  { id: "c11", name: "Dije Especial",    price: 16, file: "file_00000000cbf4724380c7337df3d08ede.webp" },
-  { id: "c12", name: "Cruz Vintage",     price: 12, file: "file_00000000dc5c71f4b9524c576b602a16.webp" },
-  { id: "c13", name: "Pieza Lumière A",  price: 18, file: "IMG_20260619_191050.webp" },
-  { id: "c14", name: "Pieza Lumière B",  price: 18, file: "IMG_20260619_191101.webp" },
+  { id: "Dije_Arepa",          file: "Dije_Arepa.webp",          name: "Dije Arepa",          price: 5 },
+  { id: "Dije_Caroren_a",      file: "Dije_Caroren_a.webp",      name: "Dije Caroreña",        price: 5 },
+  { id: "Dije_Flips",          file: "Dije_Flips.webp",          name: "Dije Flips",           price: 5 },
+  { id: "Dije_Loro_Geometrico",file: "Dije_Loro_Geometrico.webp",name: "Dije Loro Geometrico", price: 5 },
+  { id: "Dije_Pirulin",        file: "Dije_Pirulin.webp",        name: "Dije Pirulin",         price: 5 },
+  { id: "Dije_Samba",          file: "Dije_Samba.webp",          name: "Dije Samba",           price: 5 },
+  { id: "Dije_Santa_Teresa",   file: "Dije_Santa_Teresa.webp",   name: "Dije Santa Teresa",    price: 5 },
+  { id: "Dije_Toronto",        file: "Dije_Toronto.webp",        name: "Dije Toronto",         price: 5 },
 ];
 
-/* Map from id → {charm, count, element} for placed charms */
-let placed = {};   // id → {data, count, el}
+/* ── ESTADO ── */
+/*
+  CAMBIO 2: placed es ahora un array de instancias individuales.
+  Cada entrada representa UN dije físico en el collar, con sus coordenadas x/y (en % del canvas).
+  Esto permite drag independiente para cada instancia, incluso si son del mismo tipo.
+*/
+let placed  = [];  // [{instanceId, charmId, data, el, x, y}]
+let nextIid = 1;   // contador de ids de instancia
+
 let base = { type: "gold", price: 38 };
 
-/* ── CHAIN SVGs ── */
-function chainSVG(type) {
-  const stroke = type === "gold" ? "#c9a84c" : "#b0b8c8";
-  const hi     = type === "gold" ? "#e8d08a" : "#dde3ed";
-  /* Horizontal oval-link chain */
-  const links = [];
-  const count = 18;
-  const w = 420, h = 60;
-  const lw = 22, lh = 11, gap = 3;
-  const step = lw - gap;
-  const startX = (w - count * step) / 2;
-  for (let i = 0; i < count; i++) {
-    const cx = startX + i * step + lw / 2;
-    const cy = 30 + (i % 2 === 0 ? -2 : 2);
-    links.push(`<ellipse cx="${cx}" cy="${cy}" rx="${lw/2}" ry="${lh/2}"
-      fill="none" stroke="${stroke}" stroke-width="2.4" class="chain-link"/>`);
-    links.push(`<ellipse cx="${cx}" cy="${cy}" rx="${lw/2 - 1.5}" ry="${lh/2 - 1.5}"
-      fill="none" stroke="${hi}" stroke-width=".7" opacity=".5"/>`);
-  }
-  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
-    <defs><filter id="glow"><feGaussianBlur stdDeviation="1.5" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-    <g filter="url(#glow)">${links.join("")}</g>
-  </svg>`;
+/* ── DRAG STATE ── */
+let drag = null;   // estado activo del arrastre
+
+/* ── POSICIONES INICIALES ── */
+// Coordenadas pre-calculadas dentro del círculo (% desde el borde superior-izquierdo del cuadrado)
+const INIT_SLOTS = [
+  {x:50,y:47}, {x:34,y:44}, {x:66,y:44},
+  {x:42,y:60}, {x:58,y:60}, {x:50,y:32},
+  {x:27,y:53}, {x:73,y:53},
+];
+function getInitialPos(idx) {
+  return INIT_SLOTS[idx % INIT_SLOTS.length] ?? {x:50, y:50};
 }
 
-/* Position of the charms-row relative to canvas (percentage from top) */
-const CHARM_TOP = { gold: "47%", silver: "47%" };
+/* ── UTILIDAD ── */
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-/* ── RENDER CHAIN ── */
+/* ── CADENA: imagen circular con filtro por tipo de base ── */
+/*
+  Cambia el src aquí si tienes imágenes distintas para cadena dorada / plateada.
+  Con una sola imagen se simulan ambos acabados mediante filtros CSS.
+*/
+const CHAIN_IMAGES = {
+  gold:   "./dijes/Pulsera.webp",
+  silver: "./dijes/Pulsera.webp",  // reemplaza con imagen plateada si la tienes
+};
+const CHAIN_FILTERS = {
+  gold:   "sepia(0.25) saturate(1.4) brightness(1.05)",
+  silver: "grayscale(0.7) brightness(1.12) contrast(1.05)",
+};
+
 function renderChain() {
-  document.getElementById("chainLayer").innerHTML = chainSVG(base.type);
-  document.getElementById("charmsRow").style.top = CHARM_TOP[base.type];
+  const img = document.getElementById("chainImg");
+  img.src           = CHAIN_IMAGES[base.type];
+  img.style.filter  = CHAIN_FILTERS[base.type];
 }
 
-/* ── BUILD CATALOG ── */
+/* ── CATÁLOGO ── */
 function buildCatalog() {
   const grid = document.getElementById("charmsGrid");
   grid.innerHTML = "";
   CHARMS.forEach(charm => {
     const card = document.createElement("div");
-    card.className = "charm-card";
-    card.dataset.id = charm.id;
-    card.innerHTML = `
+    card.className   = "charm-card";
+    card.dataset.id  = charm.id;
+    card.innerHTML   = `
       <span class="charm-count-badge" id="badge-${charm.id}">0</span>
       <img src="./dijes/${charm.file}" alt="${charm.name}" loading="lazy" width="64" height="64" />
       <span class="charm-name">${charm.name}</span>
@@ -721,90 +688,228 @@ function buildCatalog() {
   });
 }
 
-/* ── ADD CHARM ── */
+/* ══════════════════════════════════════════════════════
+   CAMBIO 2 – Drag & Drop con la Pointer Events API nativa
+   ══════════════════════════════════════════════════════ */
+function attachDrag(el, instanceId) {
+
+  el.addEventListener("pointerdown", e => {
+    if (e.target.closest(".charm-delete, .charm-rotate-handle")) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    drag = {
+      instanceId,
+      el,
+      startX: e.clientX,
+      startY: e.clientY,
+      moved:  false,
+      finalX: null,
+      finalY: null,
+    };
+    el.setPointerCapture(e.pointerId); // mantiene los eventos aunque salga del elemento
+    el.classList.add("dragging");
+  });
+
+  el.addEventListener("pointermove", e => {
+    if (!drag || drag.instanceId !== instanceId) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    if (!drag.moved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) drag.moved = true;
+    if (!drag.moved) return;
+
+    const rect = document.getElementById("jewelryCanvas").getBoundingClientRect();
+    // Convertimos posición del puntero a porcentaje dentro del canvas
+    const x = clamp(((e.clientX - rect.left) / rect.width)  * 100, 8, 92);
+    const y = clamp(((e.clientY - rect.top)  / rect.height) * 100, 8, 92);
+
+    el.style.left  = x + "%";
+    el.style.top   = y + "%";
+    drag.finalX = x;
+    drag.finalY = y;
+  });
+
+  el.addEventListener("pointerup", () => {
+    if (!drag || drag.instanceId !== instanceId) return;
+    el.classList.remove("dragging");
+
+    if (!drag.moved) {
+      // Sin movimiento → fue un tap/clic → eliminar dije
+      removeInstance(instanceId);
+    } else {
+      // Actualizar coordenadas guardadas
+      const inst = placed.find(p => p.instanceId === instanceId);
+      if (inst && drag.finalX !== null) {
+        inst.x = drag.finalX;
+        inst.y = drag.finalY;
+        saveState();
+      }
+    }
+    drag = null;
+  });
+
+  el.addEventListener("pointercancel", () => {
+    if (drag?.instanceId === instanceId) {
+      el.classList.remove("dragging");
+      drag = null;
+    }
+  });
+}
+
+/* ── ROTACIÓN ── */
+function attachRotateHandle(handle, instanceId) {
+  let rot = null;
+
+  handle.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const inst = placed.find(p => p.instanceId === instanceId);
+    if (!inst) return;
+    const r = inst.el.getBoundingClientRect();
+    const cx = r.left + r.width  / 2;
+    const cy = r.top  + r.height / 2;
+    rot = {
+      cx, cy,
+      startAngle:    Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI,
+      startRotation: inst.rotation,
+    };
+    handle.setPointerCapture(e.pointerId);
+  });
+
+  handle.addEventListener("pointermove", e => {
+    if (!rot) return;
+    const angle    = Math.atan2(e.clientY - rot.cy, e.clientX - rot.cx) * 180 / Math.PI;
+    const newRot   = rot.startRotation + (angle - rot.startAngle);
+    const inst     = placed.find(p => p.instanceId === instanceId);
+    if (!inst) return;
+    inst.rotation          = newRot;
+    inst.el.style.transform = `translate(-50%, -50%) rotate(${newRot}deg)`;
+  });
+
+  handle.addEventListener("pointerup",     () => { if (rot) { rot = null; saveState(); } });
+  handle.addEventListener("pointercancel", () => { rot = null; });
+}
+
+/* Construye el elemento DOM de un dije y adjunta todos los handlers */
+function buildCharmEl(charm, instanceId, rotation) {
+  const el = document.createElement("div");
+  el.className         = "placed-charm";
+  el.style.transform   = `translate(-50%, -50%) rotate(${rotation}deg)`;
+  el.innerHTML = `
+    <img src="./dijes/${charm.file}" alt="${charm.name}" />
+    <button class="charm-delete" aria-label="Eliminar">×</button>
+    <span class="charm-rotate-handle" title="Rotar">↻</span>
+  `;
+  el.querySelector(".charm-delete").addEventListener("click", e => {
+    e.stopPropagation();
+    removeInstance(instanceId);
+  });
+  attachDrag(el, instanceId);
+  attachRotateHandle(el.querySelector(".charm-rotate-handle"), instanceId);
+  return el;
+}
+
+/* ── AÑADIR DIJE ── */
 const MAX_CHARMS = 8;
 
 function addCharm(charm) {
-  const total = Object.values(placed).reduce((s, v) => s + v.count, 0);
-  if (total >= MAX_CHARMS) {
+  if (placed.length >= MAX_CHARMS) {
     showToast(`Máximo ${MAX_CHARMS} dijes por joya`);
     return;
   }
+  const instanceId = nextIid++;
+  const pos        = getInitialPos(placed.length);
+  const rotation   = 0;
 
-  if (placed[charm.id]) {
-    placed[charm.id].count++;
-  } else {
-    // Create placed element
-    const el = document.createElement("div");
-    el.className = "placed-charm";
-    el.dataset.id = charm.id;
-    el.innerHTML = `<img src="./dijes/${charm.file}" alt="${charm.name}" />`;
-    el.addEventListener("click", () => removeCharm(charm.id));
-    document.getElementById("charmsRow").appendChild(el);
-    placed[charm.id] = { data: charm, count: 1, el };
-  }
+  const el = buildCharmEl(charm, instanceId, rotation);
+  el.style.left = pos.x + "%";
+  el.style.top  = pos.y + "%";
+  document.getElementById("charmsCanvas").appendChild(el);
 
+  // Animación de entrada vía Web Animations API (no interfiere con CSS transform)
+  el.animate(
+    [
+      { opacity: 0, transform: `translate(-50%, -70%) rotate(${rotation}deg) scale(.3)` },
+      { opacity: 1, transform: `translate(-50%, -50%) rotate(${rotation}deg) scale(1)` },
+    ],
+    { duration: 350, easing: "cubic-bezier(.34,1.56,.64,1)" }
+  );
+
+  placed.push({ instanceId, charmId: charm.id, data: charm, el, x: pos.x, y: pos.y, rotation });
   updateUI();
   saveState();
-  showToast(`${charm.name} añadido ✓`);
+  showToast(`${charm.name} añadido`);
 }
 
-/* ── REMOVE CHARM ── */
-function removeCharm(id) {
-  if (!placed[id]) return;
-  placed[id].count--;
-  if (placed[id].count <= 0) {
-    placed[id].el.remove();
-    delete placed[id];
-  }
-  updateUI();
-  saveState();
+/* ── ELIMINAR INSTANCIA ── */
+function removeInstance(instanceId) {
+  const idx = placed.findIndex(p => p.instanceId === instanceId);
+  if (idx === -1) return;
+  const { el, rotation } = placed[idx];
+  const rot = rotation || 0;
+  el.animate(
+    [
+      { opacity: 1, transform: `translate(-50%, -50%) rotate(${rot}deg) scale(1)` },
+      { opacity: 0, transform: `translate(-50%, -50%) rotate(${rot}deg) scale(.25)` },
+    ],
+    { duration: 200, easing: "ease", fill: "forwards" }
+  ).onfinish = () => {
+    el.remove();
+    placed.splice(idx, 1);
+    updateUI();
+    saveState();
+  };
 }
 
-/* ── RESET ── */
+/* ── VACIAR JOYA ── */
 function resetJewelry() {
-  placed = {};
-  document.getElementById("charmsRow").innerHTML = "";
+  placed.forEach(p => p.el.remove());
+  placed = [];
   updateUI();
   saveState();
   showToast("Joya vaciada");
 }
 
-/* ── UPDATE UI ── */
+/* ── ACTUALIZAR UI ── */
 function updateUI() {
-  const charmsTotal = Object.values(placed).reduce((s, v) => s + v.data.price * v.count, 0);
+  const charmsTotal = placed.reduce((s, p) => s + p.data.price, 0);
   const total = base.price + charmsTotal;
-  const count = Object.values(placed).reduce((s, v) => s + v.count, 0);
 
-  document.getElementById("priceValue").textContent = total;
-  document.getElementById("ctaPrice").textContent = "€" + total;
-  document.getElementById("selectedCount").textContent = count;
+  document.getElementById("priceValue").textContent    = total;
+  document.getElementById("ctaPrice").textContent      = "€" + total;
+  document.getElementById("selectedCount").textContent = placed.length;
 
-  // Badge per card
+  // Badges y estado de selección en el catálogo
   CHARMS.forEach(c => {
+    const count = placed.filter(p => p.charmId === c.id).length;
     const card  = document.querySelector(`.charm-card[data-id="${c.id}"]`);
     const badge = document.getElementById(`badge-${c.id}`);
-    const p = placed[c.id];
-    if (p) {
+    if (count > 0) {
       card.classList.add("selected");
-      badge.textContent = p.count;
+      badge.textContent = count;
     } else {
       card.classList.remove("selected");
       badge.textContent = 0;
     }
   });
 
-  // Hint visibility
-  const hint = document.getElementById("canvasHint");
-  hint.classList.toggle("hidden", count > 0);
+  // Hint vacío
+  document.getElementById("canvasHint").classList.toggle("hidden", placed.length > 0);
 
-  // Slots strip
+  // Tip de arrastre (aparece tras añadir el primer dije)
+  document.getElementById("dragTip").classList.toggle("visible", placed.length > 0);
+
+  // Píldoras de resumen
   const slots = document.getElementById("charmSlots");
   slots.innerHTML = "";
-  Object.values(placed).forEach(v => {
+  const byType = {};
+  placed.forEach(p => {
+    if (!byType[p.charmId]) byType[p.charmId] = { name: p.data.name, count: 0 };
+    byType[p.charmId].count++;
+  });
+  Object.values(byType).forEach(v => {
     const pill = document.createElement("span");
-    pill.className = "charm-slot-pill";
-    pill.textContent = v.count > 1 ? `${v.data.name} ×${v.count}` : v.data.name;
+    pill.className   = "charm-slot-pill";
+    pill.textContent = v.count > 1 ? `${v.name} ×${v.count}` : v.name;
     slots.appendChild(pill);
   });
 }
@@ -814,9 +919,9 @@ function initBaseSelector() {
   document.getElementById("baseSelector").addEventListener("click", e => {
     const opt = e.target.closest(".base-option");
     if (!opt) return;
-    document.querySelectorAll(".base-option").forEach(el => {
-      el.classList.remove("active", "active-silver");
-    });
+    document.querySelectorAll(".base-option").forEach(el =>
+      el.classList.remove("active", "active-silver")
+    );
     base.type  = opt.dataset.base;
     base.price = parseInt(opt.dataset.price);
     opt.classList.add(base.type === "gold" ? "active" : "active-silver");
@@ -827,15 +932,14 @@ function initBaseSelector() {
   });
 }
 
-/* ── PERSIST ── */
-const STORAGE_KEY = "lumiere_jewelry_v1";
+/* ── PERSISTENCIA LOCAL ── */
+// Versión 2 del storage: el formato cambió (placed es array con x,y en lugar de objeto con count)
+const STORAGE_KEY = "lumiere_jewelry_v2";
 
 function saveState() {
   const data = {
-    base: base,
-    placed: Object.fromEntries(
-      Object.entries(placed).map(([id, v]) => [id, v.count])
-    )
+    base,
+    placed: placed.map(p => ({ charmId: p.charmId, x: p.x, y: p.y, rotation: p.rotation || 0 })),
   };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(_) {}
 }
@@ -845,9 +949,9 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
+
     if (data.base) {
       base = data.base;
-      // Sync radio + active class
       document.querySelectorAll(".base-option").forEach(el => {
         el.classList.remove("active", "active-silver");
         if (el.dataset.base === base.type) {
@@ -857,17 +961,18 @@ function loadState() {
       });
       renderChain();
     }
-    if (data.placed) {
-      Object.entries(data.placed).forEach(([id, count]) => {
-        const charm = CHARMS.find(c => c.id === id);
+
+    if (Array.isArray(data.placed)) {
+      data.placed.forEach(item => {
+        const charm    = CHARMS.find(c => c.id === item.charmId);
         if (!charm) return;
-        const el = document.createElement("div");
-        el.className = "placed-charm";
-        el.dataset.id = id;
-        el.innerHTML = `<img src="./dijes/${charm.file}" alt="${charm.name}" />`;
-        el.addEventListener("click", () => removeCharm(id));
-        document.getElementById("charmsRow").appendChild(el);
-        placed[id] = { data: charm, count, el };
+        const instanceId = nextIid++;
+        const rotation   = item.rotation || 0;
+        const el = buildCharmEl(charm, instanceId, rotation);
+        el.style.left = item.x + "%";
+        el.style.top  = item.y + "%";
+        document.getElementById("charmsCanvas").appendChild(el);
+        placed.push({ instanceId, charmId: charm.id, data: charm, el, x: item.x, y: item.y, rotation });
       });
     }
   } catch(_) {}
@@ -880,7 +985,7 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
 /* ── INIT ── */
@@ -892,15 +997,9 @@ function init() {
   updateUI();
 
   document.getElementById("btnReset").addEventListener("click", resetJewelry);
-  document.getElementById("btnAddCart").addEventListener("click", () => {
-    showToast("¡Añadido al carrito! 🛍️");
-  });
-
-  // Position charms row vertically at center of chain
-  // Chain SVG sits at ~47% height of canvas – we fine-tune here
-  const row = document.getElementById("charmsRow");
-  row.style.top = "47%";
-  row.style.transform = "translateY(-50%)";
+  document.getElementById("btnAddCart").addEventListener("click", () =>
+    showToast("¡Añadido al carrito!")
+  );
 }
 
 document.addEventListener("DOMContentLoaded", init);
