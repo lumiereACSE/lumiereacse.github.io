@@ -1,1 +1,909 @@
-hola mundo
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumière – Crea Tu Joya de Charms</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+
+  <style>
+    /* ─── TOKENS ─── */
+    :root {
+      --gold:        #c9a84c;
+      --gold-light:  #e8d08a;
+      --gold-dark:   #a07830;
+      --silver:      #b0b8c8;
+      --silver-light:#dde3ed;
+      --silver-dark: #7a8496;
+      --bg:          #faf9f7;
+      --surface:     #ffffff;
+      --text:        #1a1612;
+      --muted:       #7a746c;
+      --border:      #e8e2d8;
+      --radius:      12px;
+      --shadow:      0 4px 24px rgba(0,0,0,.08);
+      --chain-color: var(--gold);
+    }
+
+    /* ─── RESET ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: .18em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    nav a {
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 28px;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--gold); }
+
+    /* ─── MAIN LAYOUT ─── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; padding: 24px 16px 60px; }
+      header { padding: 14px 20px; }
+    }
+
+    /* ─── LEFT COLUMN – PREVIEW ─── */
+    .preview-col {
+      position: sticky;
+      top: 82px;
+      height: fit-content;
+      padding: 24px 32px 24px 0;
+      border-right: 1px solid var(--border);
+    }
+    @media (max-width: 900px) {
+      .preview-col { position: static; border-right: none; padding: 0 0 24px; }
+    }
+
+    .preview-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .75rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* Jewelry canvas */
+    .jewelry-canvas {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.1;
+      background: linear-gradient(145deg, #f5f0e8 0%, #ede8de 100%);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+    }
+    .jewelry-canvas::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.6) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Chain SVG layer */
+    .chain-layer {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .chain-layer svg {
+      width: 88%;
+      height: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.15));
+    }
+
+    /* Charms drop zone */
+    .charms-row {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    /* Vertical position will be set per base type via JS */
+
+    .placed-charm {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform .15s ease;
+      animation: dropIn .3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .placed-charm:hover { transform: scale(1.15) translateY(-3px); }
+    .placed-charm:hover::after {
+      content: '×';
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      background: #e55;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      line-height: 18px;
+      text-align: center;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+    }
+    .placed-charm img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,.22));
+    }
+
+    @keyframes dropIn {
+      from { opacity: 0; transform: scale(.5) translateY(-20px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Empty state */
+    .canvas-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      pointer-events: none;
+      transition: opacity .3s;
+    }
+    .canvas-hint i { font-size: 2rem; opacity: .4; }
+    .canvas-hint p { font-size: .8rem; letter-spacing: .08em; opacity: .6; }
+    .canvas-hint.hidden { opacity: 0; }
+
+    /* Controls under canvas */
+    .preview-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 12px;
+    }
+    .btn-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-reset:hover { border-color: #e55; color: #e55; }
+
+    .price-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .price-badge .price-label {
+      font-size: .68rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .price-badge .price-total {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+    }
+    .price-badge .price-total .currency { font-size: 1rem; vertical-align: super; margin-right: 2px; }
+
+    /* Charm count pills */
+    .charm-slots {
+      display: flex;
+      gap: 4px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .charm-slot-pill {
+      font-size: .68rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    /* ─── RIGHT COLUMN – BUILDER ─── */
+    .builder-col {
+      padding: 24px 0 24px 40px;
+    }
+    @media (max-width: 900px) {
+      .builder-col { padding: 0; }
+    }
+
+    .product-eyebrow {
+      font-size: .72rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .product-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .product-subtitle {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Divider */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* Section label */
+    .section-label {
+      font-size: .72rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Base selector */
+    .base-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .base-option {
+      position: relative;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all .2s;
+      background: var(--surface);
+    }
+    .base-option:hover { border-color: var(--gold-light); }
+    .base-option.active {
+      border-color: var(--gold);
+      background: linear-gradient(135deg, #fffef8 0%, #fdf6e3 100%);
+    }
+    .base-option.active-silver {
+      border-color: var(--silver);
+      background: linear-gradient(135deg, #f8f9fc 0%, #edf0f6 100%);
+    }
+    .base-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .base-name {
+      font-size: .82rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      margin-bottom: 3px;
+    }
+    .base-detail {
+      font-size: .72rem;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+    .base-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .dot-gold   { background: linear-gradient(135deg, var(--gold-light), var(--gold)); }
+    .dot-silver { background: linear-gradient(135deg, var(--silver-light), var(--silver)); }
+
+    /* Charms grid */
+    .charms-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 4px;
+    }
+    @media (max-width: 480px) {
+      .charms-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .charm-card {
+      position: relative;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 8px 10px;
+      cursor: pointer;
+      transition: all .2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      user-select: none;
+    }
+    .charm-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(201,168,76,.15);
+      transform: translateY(-2px);
+    }
+    .charm-card.selected {
+      border-color: var(--gold);
+      background: linear-gradient(145deg, #fffef8, #fdf6e3);
+    }
+    .charm-card.selected::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: .65rem;
+      color: var(--gold);
+    }
+    .charm-card img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .charm-card .charm-name {
+      font-size: .72rem;
+      letter-spacing: .04em;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .charm-card .charm-price {
+      font-size: .72rem;
+      color: var(--gold-dark);
+      font-weight: 500;
+    }
+    .charm-count-badge {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      display: none;
+    }
+    .charm-card.selected .charm-count-badge { display: flex; }
+
+    /* CTA */
+    .cta-area {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 24px;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary:hover { background: var(--gold-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(160,120,48,.35); }
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      font-size: .82rem;
+      letter-spacing: .08em;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-secondary:hover { border-color: var(--gold-light); color: var(--gold-dark); }
+
+    .trust-strip {
+      display: flex;
+      gap: 18px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .72rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+    .trust-item i { color: var(--gold); font-size: .8rem; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1612;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: .8rem;
+      letter-spacing: .06em;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ─── CHAIN SVG THEMES ─── */
+    .chain-gold   .chain-link { stroke: var(--gold); }
+    .chain-silver .chain-link { stroke: var(--silver); }
+  </style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">Lumi<span>è</span>re</a>
+  <nav>
+    <a href="#">Colecciones</a>
+    <a href="#">Personalizar</a>
+    <a href="#">Nosotros</a>
+    <a href="#"><i class="fa-regular fa-heart"></i></a>
+    <a href="#"><i class="fa-solid fa-bag-shopping"></i></a>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main>
+
+  <!-- LEFT: PREVIEW -->
+  <section class="preview-col" aria-label="Previsualización de la joya">
+    <p class="preview-label">Vista previa en tiempo real</p>
+
+    <div class="jewelry-canvas" id="jewelryCanvas">
+      <!-- Chain SVG -->
+      <div class="chain-layer" id="chainLayer">
+        <!-- SVG generated by JS -->
+      </div>
+
+      <!-- Charms drop zone – top position set by JS -->
+      <div class="charms-row" id="charmsRow"></div>
+
+      <!-- Empty hint -->
+      <div class="canvas-hint" id="canvasHint">
+        <i class="fa-regular fa-gem"></i>
+        <p>Selecciona dijes para personalizar</p>
+      </div>
+    </div>
+
+    <div class="preview-controls">
+      <button class="btn-reset" id="btnReset" aria-label="Vaciar joya">
+        <i class="fa-solid fa-rotate-left"></i> Vaciar joya
+      </button>
+      <div class="price-badge">
+        <span class="price-label">Total estimado</span>
+        <span class="price-total" id="priceTotal">
+          <span class="currency">€</span><span id="priceValue">0</span>
+        </span>
+      </div>
+    </div>
+    <div class="charm-slots" id="charmSlots"></div>
+  </section>
+
+  <!-- RIGHT: BUILDER -->
+  <section class="builder-col">
+    <p class="product-eyebrow">Joyería personalizada · Hecho a mano</p>
+    <h1 class="product-title">Crea Tu Collar<br><em>de Charms</em> Único</h1>
+    <p class="product-subtitle">
+      Elige tu cadena base y combina tus dijes favoritos.<br>
+      Cada pieza se fabrica bajo pedido en nuestro taller.
+    </p>
+
+    <hr class="section-divider" />
+
+    <!-- Base selector -->
+    <p class="section-label"><i class="fa-solid fa-link" style="margin-right:6px;color:var(--gold)"></i>Elige tu cadena base</p>
+    <div class="base-selector" id="baseSelector">
+      <label class="base-option active" data-base="gold" data-price="38">
+        <input type="radio" name="base" value="gold" checked />
+        <span class="base-name"><span class="base-dot dot-gold"></span>Cadena Dorada</span>
+        <span class="base-detail">Baño de oro 18k · 45 cm</span>
+        <span class="base-detail" style="color:var(--gold-dark);font-weight:500;margin-top:4px;display:block;">€38</span>
+      </label>
+      <label class="base-option" data-base="silver" data-price="28">
+        <input type="radio" name="base" value="silver" />
+        <span class="base-name"><span class="base-dot dot-silver"></span>Cadena Plateada</span>
+        <span class="base-detail">Acero inoxidable 316L · 45 cm</span>
+        <span class="base-detail" style="color:var(--silver-dark);font-weight:500;margin-top:4px;display:block;">€28</span>
+      </label>
+    </div>
+
+    <hr class="section-divider" />
+
+    <!-- Charms catalog -->
+    <p class="section-label"><i class="fa-solid fa-circle-plus" style="margin-right:6px;color:var(--gold)"></i>Añade tus dijes — <span id="selectedCount">0</span> seleccionados</p>
+    <div class="charms-grid" id="charmsGrid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-area">
+      <button class="btn-primary" id="btnAddCart">
+        <i class="fa-solid fa-bag-shopping"></i>
+        Añadir al carrito · <span id="ctaPrice">€38</span>
+      </button>
+      <button class="btn-secondary">
+        <i class="fa-regular fa-heart"></i>
+        Guardar diseño
+      </button>
+    </div>
+
+    <div class="trust-strip">
+      <span class="trust-item"><i class="fa-solid fa-shield-halved"></i>Pago seguro</span>
+      <span class="trust-item"><i class="fa-solid fa-truck"></i>Envío gratis +60€</span>
+      <span class="trust-item"><i class="fa-solid fa-rotate"></i>30 días devolución</span>
+      <span class="trust-item"><i class="fa-solid fa-star"></i>Hecho a mano</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<script>
+/* ── DATA ── */
+const CHARMS = [
+  { id: "c01", name: "Luna Creciente",  price: 12, file: "file_000000003cc471f48e98bed1ee7993df__1_.webp" },
+  { id: "c02", name: "Estrella",         price: 10, file: "file_0000000055d871f4a094ad114945b95d.webp" },
+  { id: "c03", name: "Corazón",          price: 11, file: "file_000000006b7071f4a501bbf9aeec58a6.webp" },
+  { id: "c04", name: "Flor",             price: 13, file: "file_000000006e4871f495f5dff3c53cf014.webp" },
+  { id: "c05", name: "Mariposa",         price: 14, file: "file_00000000728871f4900ca3c91d93b3c9.webp" },
+  { id: "c06", name: "Llave",            price: 12, file: "file_0000000079dc71f4a5592334b7c4e354.webp" },
+  { id: "c07", name: "Infinito",         price: 11, file: "file_0000000079f472468fff3a27ff31339f.webp" },
+  { id: "c08", name: "Sol",              price: 13, file: "file_00000000815071f4a10cdc3f25b8f3fb.webp" },
+  { id: "c09", name: "Trébol",           price: 10, file: "file_000000008c3071f48a90945be02f3b5a.webp" },
+  { id: "c10", name: "Perla",            price: 15, file: "file_00000000b16471f4a3bf2a2e12fb2e64.webp" },
+  { id: "c11", name: "Dije Especial",    price: 16, file: "file_00000000cbf4724380c7337df3d08ede.webp" },
+  { id: "c12", name: "Cruz Vintage",     price: 12, file: "file_00000000dc5c71f4b9524c576b602a16.webp" },
+  { id: "c13", name: "Pieza Lumière A",  price: 18, file: "IMG_20260619_191050.webp" },
+  { id: "c14", name: "Pieza Lumière B",  price: 18, file: "IMG_20260619_191101.webp" },
+];
+
+/* Map from id → {charm, count, element} for placed charms */
+let placed = {};   // id → {data, count, el}
+let base = { type: "gold", price: 38 };
+
+/* ── CHAIN SVGs ── */
+function chainSVG(type) {
+  const stroke = type === "gold" ? "#c9a84c" : "#b0b8c8";
+  const hi     = type === "gold" ? "#e8d08a" : "#dde3ed";
+  /* Horizontal oval-link chain */
+  const links = [];
+  const count = 18;
+  const w = 420, h = 60;
+  const lw = 22, lh = 11, gap = 3;
+  const step = lw - gap;
+  const startX = (w - count * step) / 2;
+  for (let i = 0; i < count; i++) {
+    const cx = startX + i * step + lw / 2;
+    const cy = 30 + (i % 2 === 0 ? -2 : 2);
+    links.push(`<ellipse cx="${cx}" cy="${cy}" rx="${lw/2}" ry="${lh/2}"
+      fill="none" stroke="${stroke}" stroke-width="2.4" class="chain-link"/>`);
+    links.push(`<ellipse cx="${cx}" cy="${cy}" rx="${lw/2 - 1.5}" ry="${lh/2 - 1.5}"
+      fill="none" stroke="${hi}" stroke-width=".7" opacity=".5"/>`);
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs><filter id="glow"><feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g filter="url(#glow)">${links.join("")}</g>
+  </svg>`;
+}
+
+/* Position of the charms-row relative to canvas (percentage from top) */
+const CHARM_TOP = { gold: "47%", silver: "47%" };
+
+/* ── RENDER CHAIN ── */
+function renderChain() {
+  document.getElementById("chainLayer").innerHTML = chainSVG(base.type);
+  document.getElementById("charmsRow").style.top = CHARM_TOP[base.type];
+}
+
+/* ── BUILD CATALOG ── */
+function buildCatalog() {
+  const grid = document.getElementById("charmsGrid");
+  grid.innerHTML = "";
+  CHARMS.forEach(charm => {
+    const card = document.createElement("div");
+    card.className = "charm-card";
+    card.dataset.id = charm.id;
+    card.innerHTML = `
+      <span class="charm-count-badge" id="badge-${charm.id}">0</span>
+      <img src="./dijes/${charm.file}" alt="${charm.name}" loading="lazy" width="64" height="64" />
+      <span class="charm-name">${charm.name}</span>
+      <span class="charm-price">+€${charm.price}</span>
+    `;
+    card.addEventListener("click", () => addCharm(charm));
+    grid.appendChild(card);
+  });
+}
+
+/* ── ADD CHARM ── */
+const MAX_CHARMS = 8;
+
+function addCharm(charm) {
+  const total = Object.values(placed).reduce((s, v) => s + v.count, 0);
+  if (total >= MAX_CHARMS) {
+    showToast(`Máximo ${MAX_CHARMS} dijes por joya`);
+    return;
+  }
+
+  if (placed[charm.id]) {
+    placed[charm.id].count++;
+  } else {
+    // Create placed element
+    const el = document.createElement("div");
+    el.className = "placed-charm";
+    el.dataset.id = charm.id;
+    el.innerHTML = `<img src="./dijes/${charm.file}" alt="${charm.name}" />`;
+    el.addEventListener("click", () => removeCharm(charm.id));
+    document.getElementById("charmsRow").appendChild(el);
+    placed[charm.id] = { data: charm, count: 1, el };
+  }
+
+  updateUI();
+  saveState();
+  showToast(`${charm.name} añadido ✓`);
+}
+
+/* ── REMOVE CHARM ── */
+function removeCharm(id) {
+  if (!placed[id]) return;
+  placed[id].count--;
+  if (placed[id].count <= 0) {
+    placed[id].el.remove();
+    delete placed[id];
+  }
+  updateUI();
+  saveState();
+}
+
+/* ── RESET ── */
+function resetJewelry() {
+  placed = {};
+  document.getElementById("charmsRow").innerHTML = "";
+  updateUI();
+  saveState();
+  showToast("Joya vaciada");
+}
+
+/* ── UPDATE UI ── */
+function updateUI() {
+  const charmsTotal = Object.values(placed).reduce((s, v) => s + v.data.price * v.count, 0);
+  const total = base.price + charmsTotal;
+  const count = Object.values(placed).reduce((s, v) => s + v.count, 0);
+
+  document.getElementById("priceValue").textContent = total;
+  document.getElementById("ctaPrice").textContent = "€" + total;
+  document.getElementById("selectedCount").textContent = count;
+
+  // Badge per card
+  CHARMS.forEach(c => {
+    const card  = document.querySelector(`.charm-card[data-id="${c.id}"]`);
+    const badge = document.getElementById(`badge-${c.id}`);
+    const p = placed[c.id];
+    if (p) {
+      card.classList.add("selected");
+      badge.textContent = p.count;
+    } else {
+      card.classList.remove("selected");
+      badge.textContent = 0;
+    }
+  });
+
+  // Hint visibility
+  const hint = document.getElementById("canvasHint");
+  hint.classList.toggle("hidden", count > 0);
+
+  // Slots strip
+  const slots = document.getElementById("charmSlots");
+  slots.innerHTML = "";
+  Object.values(placed).forEach(v => {
+    const pill = document.createElement("span");
+    pill.className = "charm-slot-pill";
+    pill.textContent = v.count > 1 ? `${v.data.name} ×${v.count}` : v.data.name;
+    slots.appendChild(pill);
+  });
+}
+
+/* ── BASE SELECTOR ── */
+function initBaseSelector() {
+  document.getElementById("baseSelector").addEventListener("click", e => {
+    const opt = e.target.closest(".base-option");
+    if (!opt) return;
+    document.querySelectorAll(".base-option").forEach(el => {
+      el.classList.remove("active", "active-silver");
+    });
+    base.type  = opt.dataset.base;
+    base.price = parseInt(opt.dataset.price);
+    opt.classList.add(base.type === "gold" ? "active" : "active-silver");
+    opt.querySelector("input").checked = true;
+    renderChain();
+    updateUI();
+    saveState();
+  });
+}
+
+/* ── PERSIST ── */
+const STORAGE_KEY = "lumiere_jewelry_v1";
+
+function saveState() {
+  const data = {
+    base: base,
+    placed: Object.fromEntries(
+      Object.entries(placed).map(([id, v]) => [id, v.count])
+    )
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(_) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.base) {
+      base = data.base;
+      // Sync radio + active class
+      document.querySelectorAll(".base-option").forEach(el => {
+        el.classList.remove("active", "active-silver");
+        if (el.dataset.base === base.type) {
+          el.classList.add(base.type === "gold" ? "active" : "active-silver");
+          el.querySelector("input").checked = true;
+        }
+      });
+      renderChain();
+    }
+    if (data.placed) {
+      Object.entries(data.placed).forEach(([id, count]) => {
+        const charm = CHARMS.find(c => c.id === id);
+        if (!charm) return;
+        const el = document.createElement("div");
+        el.className = "placed-charm";
+        el.dataset.id = id;
+        el.innerHTML = `<img src="./dijes/${charm.file}" alt="${charm.name}" />`;
+        el.addEventListener("click", () => removeCharm(id));
+        document.getElementById("charmsRow").appendChild(el);
+        placed[id] = { data: charm, count, el };
+      });
+    }
+  } catch(_) {}
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ── INIT ── */
+function init() {
+  renderChain();
+  buildCatalog();
+  initBaseSelector();
+  loadState();
+  updateUI();
+
+  document.getElementById("btnReset").addEventListener("click", resetJewelry);
+  document.getElementById("btnAddCart").addEventListener("click", () => {
+    showToast("¡Añadido al carrito! 🛍️");
+  });
+
+  // Position charms row vertically at center of chain
+  // Chain SVG sits at ~47% height of canvas – we fine-tune here
+  const row = document.getElementById("charmsRow");
+  row.style.top = "47%";
+  row.style.transform = "translateY(-50%)";
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
